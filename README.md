@@ -87,6 +87,10 @@ y = x * pi -- = 12.5663706144
   - [x] Remove `CalciumAppend` and `CalciumReplace` commands
   - [x] Use `mode` and `visual` vars instead of `opts` for `calculate()`
   - [ ] Notification title
+- [ ] Fix
+  - [ ] Keep indention for `:Calcium replace`
+  - [ ] `./plugin/calcium.lua`, should it have more checks? Should everything be in another path (so it doesn't load on start), should it have the global variable check?
+- [ ] Cmdline `<mode>` suggestions
 - [ ] Cmdline calculations
 - [ ] Smart selection when no visual selection is provided (e.g., "I have `2 + 1` cats")
 - [ ] Boolean result when a `=` is already present
