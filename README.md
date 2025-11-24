@@ -1,6 +1,8 @@
 # 🧮 calcium.nvim
 
-A powerful Neovim plugin to calculate mathematical expressions with visual mode and variable support.
+A powerful calculator with visual mode and variable support.
+
+![calcium](https://github.com/user-attachments/assets/4e805a43-2f8c-44ec-919e-fef4e65611b3)
 
 ## ✨ Features
 
