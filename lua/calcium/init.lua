@@ -1,6 +1,7 @@
 local M = {}
-local config = require("calcium.config")
 local calculator = require("calcium.calculator")
+local config = require("calcium.config")
+local utils = require("calcium.utils")
 
 function M.setup(opts)
 	config.setup(opts)
@@ -40,7 +41,7 @@ function M.calculate(mode, visual)
 	expr = expr:gsub("^%s+", ""):gsub("%s+$", "")
 
 	if expr == "" then
-		vim.notify("No expression found", vim.log.levels.WARN)
+		utils.notify("No expression found", vim.log.levels.WARN, true)
 		return
 	end
 
@@ -52,9 +53,7 @@ function M.calculate(mode, visual)
 	local success, result = calculator.evaluate(expr, buffer_lines)
 
 	if not success then
-		if config.options.notifications then
-			vim.notify("Calculation error: " .. tostring(result), vim.log.levels.ERROR)
-		end
+		utils.notify("Calculation error: " .. tostring(result), vim.log.levels.ERROR, config.options.notifications)
 		return
 	end
 
@@ -77,9 +76,7 @@ function M.calculate(mode, visual)
 		end
 	end
 
-	if config.options.notifications then
-		vim.notify("Result: " .. formatted_result, vim.log.levels.INFO)
-	end
+	utils.notify("Result: " .. formatted_result, vim.log.levels.INFO, config.options.notifications)
 end
 
 return M
