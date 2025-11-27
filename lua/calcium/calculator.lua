@@ -31,16 +31,8 @@ function M.evaluate_expression(expr, variables)
 	-- Replace variables with their values
 	if variables then
 		for var_name, var_value in pairs(variables) do
-			-- Use word boundaries to avoid partial replacements
-			expr = expr:gsub("([^%w_]?)(" .. var_name .. ")([^%w_]?)", function(before, _, after)
-				return before .. tostring(var_value) .. after
-			end)
-			-- Handle variable at start/end of expression
-			expr = expr:gsub("^" .. var_name .. "([^%w_])", tostring(var_value) .. "%1")
-			expr = expr:gsub("([^%w_])" .. var_name .. "$", "%1" .. tostring(var_value))
-			if expr == var_name then
-				expr = tostring(var_value)
-			end
+			local pattern = "%f[%w_]" .. var_name .. "%f[^%w_]"
+			expr = expr:gsub(pattern, tostring(var_value))
 		end
 	end
 
