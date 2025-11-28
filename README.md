@@ -76,12 +76,17 @@ y = x * pi -- = 12.5663706144
 
 #### 𝑓 Available functions
 
-- Trigonometry: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`
-- Hyperbolic: `sinh`, `cosh`, `tanh`
-- Exponential: `exp`, `log`, `log10`
-- Rounding: `floor`, `ceil`
-- Other: `sqrt`, `abs`, `min`, `max`, `pow`, `deg`, `rad`
-- Constants: `pi`
+- **Trigonometry**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`
+- **Hyperbolic**: `sinh`, `cosh`, `tanh`
+- **Exponential & Logarithmic**: `exp`, `log`, `log10`, `pow`, `sqrt`
+- **Angle Conversion**: `deg`, `rad`
+- **Rounding & Truncation**: `floor`, `ceil`, `round`, `trunc`
+- **Basic Arithmetic**: `abs`, `min`, `max`, `clamp`, `sign`, `fmod`, `modf`
+- **Number Theory**: `gcd`, `lcm`, `fact`
+- **Statistics**: `avg`, `median`, `range`, `fib`
+- **Floating Point**: `frexp`, `ldexp`
+- **Random**: `random`, `randomseed`
+- **Constants**: `pi`, `huge`
 
 ## 🏆 Roadmap
 
