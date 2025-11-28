@@ -40,7 +40,6 @@ function M.calculate(mode, visual)
 		end_col = #line - 1
 	end
 
-	-- Clean up expression
 	expr = expr:gsub("^%s+", ""):gsub("%s+$", "")
 
 	if expr == "" then
@@ -48,15 +47,13 @@ function M.calculate(mode, visual)
 		return
 	end
 
-	-- Get all buffer content for variable resolution
 	local bufnr = vim.api.nvim_get_current_buf()
 	local buffer_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
-	-- Calculate
 	local success, result = calculator.evaluate(expr, buffer_lines)
 
 	if not success then
-		utils.notify("Calculation error: " .. tostring(result), vim.log.levels.ERROR, config.options.notifications)
+		utils.notify("Calculation error: " .. tostring(result), vim.log.levels.ERROR, true)
 		return
 	end
 
@@ -81,6 +78,34 @@ function M.calculate(mode, visual)
 	end
 
 	utils.notify("Result: " .. formatted_result, vim.log.levels.INFO, config.options.notifications)
+end
+
+function M.calculate_cmdline(expr)
+	if expr == "" then
+		utils.notify("No expression provided", vim.log.levels.WARN, true)
+		return
+	end
+
+	expr = expr:gsub("^%s+", ""):gsub("%s+$", "")
+
+	if expr == "" then
+		utils.notify("No expression provided", vim.log.levels.WARN, true)
+		return
+	end
+
+	local bufnr = vim.api.nvim_get_current_buf()
+	local buffer_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+	local success, result = calculator.evaluate(expr, buffer_lines)
+
+	if not success then
+		utils.notify("Calculation error: " .. tostring(result), vim.log.levels.ERROR, true)
+		return
+	end
+
+	local formatted_result = calculator.format_result(result)
+
+	utils.notify("Result: " .. formatted_result, vim.log.levels.INFO, true)
 end
 
 return M

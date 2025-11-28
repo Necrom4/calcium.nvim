@@ -8,11 +8,15 @@ vim.api.nvim_create_user_command("Calcium", function(opts)
 	local visual = false
 
 	if opts.args and opts.args ~= "" then
-		local args = vim.split(opts.args, "%s+")
+		local args = vim.split(opts.args, "%s+", { trimempty = true })
+
 		if args[1] == "append" or args[1] == "a" then
 			mode = "append"
 		elseif args[1] == "replace" or args[1] == "r" then
 			mode = "replace"
+		else
+			require("calcium").calculate_cmdline(opts.args)
+			return
 		end
 	end
 
