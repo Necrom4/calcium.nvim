@@ -53,7 +53,7 @@ A powerful calculator with visual mode and variable support.
 :Calcium
 
 " Append the result or replace the expression by the result
-:Calcium [append|a|replace|r]
+:Calcium [a]ppend|[r]eplace
 
 " Calculate the expression in the visual selection and replace with the result
 :'<,'>Calcium replace
