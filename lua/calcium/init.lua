@@ -63,8 +63,8 @@ function M.calculate(mode, visual)
 		if visual then
 			vim.api.nvim_buf_set_text(0, start_line - 1, start_col, end_line - 1, end_col + 1, { formatted_result })
 		else
-			local indention = vim.api.nvim_get_current_line():match("^(%s+)")
-			vim.api.nvim_set_current_line(indention .. formatted_result)
+			local indentation = vim.api.nvim_get_current_line():match("^(%s+)")
+			vim.api.nvim_set_current_line(indentation .. formatted_result)
 		end
 	else
 		local append_text = " = " .. formatted_result
