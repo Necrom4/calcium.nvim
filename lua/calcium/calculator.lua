@@ -141,7 +141,7 @@ function M.evaluate_expression(expr, variables)
 	end
 
 	if type(result) ~= "number" and type(result) ~= "boolean" then
-		return false, "Result is not a number or boolean"
+		return false, "Result is not a number, variable or boolean"
 	end
 
 	return true, result
