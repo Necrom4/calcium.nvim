@@ -214,12 +214,18 @@ local function scan_forward_for_expression(tokens, start_idx, line)
 				break
 			end
 
-			if token.type == TOKEN_TYPES.OTHER then
-				if token.value:match("[%$:#\"'%[%]]") then
-					break
-				end
-			elseif token.type == TOKEN_TYPES.WORD and not token.is_variable and not is_math_function(token.value) then
-				if #expr_tokens > 0 then
+			if paren_depth == 0 then
+				if
+					(token.type == TOKEN_TYPES.OPERATOR and token.value == "=")
+					or token.type == TOKEN_TYPES.SEPARATOR
+					or token.type == TOKEN_TYPES.OTHER
+					or (
+						token.type == TOKEN_TYPES.WORD
+						and not token.is_variable
+						and not is_math_function(token.value)
+						and #expr_tokens > 0
+					)
+				then
 					break
 				end
 			end

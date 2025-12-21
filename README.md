@@ -100,6 +100,5 @@ y = x * pi -- = 12.5663706144
 - [x] Cmdline `<mode>` suggestions
 - [x] Cmdline calculations
 - [x] Boolean result (`2 + 2 >= 3` `= true`)
-- [ ] Smart selection when no visual selection is provided (e.g., "I have `2 + 1` cats")
-  - [ ] Characters like `=` and `}` are being considered part of the expression, causing an error. (Until problem solved, simply use visual mode to keep the bad character out of your expression)
+- [x] Smart selection when no visual selection is provided. In "I have `2 + 1` cats", the cursor must find the closest expression and solve it.
 - [ ] Playground mode, a small window in which the results are displayed live while typing
