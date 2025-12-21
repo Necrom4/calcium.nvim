@@ -1,4 +1,5 @@
 local M = {}
+local utils = require("calcium.utils")
 
 function M.extract_variables(buffer_lines)
 	local variables = {}
@@ -10,7 +11,7 @@ function M.extract_variables(buffer_lines)
 		if var_name and var_expr then
 			-- Remove trailing comments
 			var_expr = var_expr:gsub("%s*%-%-.*$", ""):gsub("%s*#.*$", "")
-			var_expr = var_expr:gsub("^%s+", ""):gsub("%s+$", "")
+			var_expr = utils.trim(var_expr)
 
 			local success, value = M.evaluate_expression(var_expr, variables)
 			if success then
@@ -35,9 +36,6 @@ function M.evaluate_expression(expr, variables)
 			expr = expr:gsub(pattern, tostring(var_value))
 		end
 	end
-
-	-- Replace common mathematical operations
-	expr = expr:gsub("%^", "^")
 
 	-- Mathematical Functions Library definition
 	local mfl = {}
@@ -159,18 +157,15 @@ function M.format_result(result)
 	end
 
 	-- Check if it's a very small or very large number
-	if math.abs(result) < 0.001 and result ~= 0 then
+	local abs_result = math.abs(result)
+	if (abs_result < 0.001 and result ~= 0) or abs_result > 1000000 then
 		return string.format("%.6e", result)
-	elseif math.abs(result) > 1000000 then
-		return string.format("%.6e", result)
+	elseif result == math.floor(result) then
+		return string.format("%d", result)
 	else
-		if result == math.floor(result) then
-			return string.format("%d", result)
-		else
-			local formatted = string.format("%.10f", result)
-			formatted = formatted:gsub("0+$", ""):gsub("%.$", "")
-			return formatted
-		end
+		local formatted = string.format("%.10f", result)
+		formatted = formatted:gsub("0+$", ""):gsub("%.$", "")
+		return formatted
 	end
 end
 

@@ -1,5 +1,9 @@
 local M = {}
 
+function M.trim(str)
+	return str:gsub("^%s+", ""):gsub("%s+$", "")
+end
+
 function M.notify(msg, level, enabled, opts)
 	if not enabled then
 		return
