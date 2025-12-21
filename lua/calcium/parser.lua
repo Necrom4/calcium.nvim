@@ -1,5 +1,4 @@
 local M = {}
-local utils = require("calcium.utils")
 
 -- Token types
 local TOKEN_TYPES = {
@@ -13,9 +12,8 @@ local TOKEN_TYPES = {
 	OTHER = 8,
 }
 
--- Math functions available in the sandbox (from calculator.lua mfl)
+-- Math functions from calculator.lua mfl
 local MATH_FUNCTIONS = {
-	-- Standard math library
 	abs = true,
 	acos = true,
 	asin = true,
@@ -46,7 +44,6 @@ local MATH_FUNCTIONS = {
 	sqrt = true,
 	tan = true,
 	tanh = true,
-	-- Custom functions
 	avg = true,
 	clamp = true,
 	fact = true,
@@ -60,243 +57,95 @@ local MATH_FUNCTIONS = {
 	trunc = true,
 }
 
--- Check if a word is a math function
 local function is_math_function(name)
 	return MATH_FUNCTIONS[name] ~= nil
 end
 
--- Tokenize a line into tokens with position and type information
+-- Create a token helper to reduce repetition
+local function make_token(type, value, pos)
+	return {
+		type = type,
+		value = value,
+		start_col = pos,
+		end_col = pos + #value - 1,
+		is_variable = false,
+	}
+end
+
 local function tokenize_line(line, known_variables)
 	local tokens = {}
 	local pos = 1
 
+	-- Pattern list: each entry is {pattern, token_type, optional_handler}
+	local patterns = {
+		-- Numbers (in order of specificity)
+		{ "^(%d+%.?%d*[eE][%+%-]?%d+)", TOKEN_TYPES.NUMBER },
+		{ "^(%d+%.%d+)", TOKEN_TYPES.NUMBER },
+		{ "^(%d+)", TOKEN_TYPES.NUMBER },
+		-- Multi-char operators
+		{ "^(==)", TOKEN_TYPES.OPERATOR },
+		{ "^(~=)", TOKEN_TYPES.OPERATOR },
+		{ "^(>=)", TOKEN_TYPES.OPERATOR },
+		{ "^(<=)", TOKEN_TYPES.OPERATOR },
+		-- Single-char operators
+		{ "^([%+%-%*/%%%^<>])", TOKEN_TYPES.OPERATOR },
+		-- Parentheses
+		{ "^([%(%)%[%]])", TOKEN_TYPES.PAREN },
+		-- Separator
+		{ "^(,)", TOKEN_TYPES.SEPARATOR },
+		-- Whitespace
+		{ "^(%s+)", TOKEN_TYPES.WHITESPACE },
+		-- Words (identifiers)
+		{
+			"^([%a_][%w_]*)",
+			TOKEN_TYPES.WORD,
+			function(match)
+				if is_math_function(match) then
+					return TOKEN_TYPES.FUNCTION, false
+				elseif known_variables and known_variables[match] then
+					return TOKEN_TYPES.WORD, true
+				end
+				return TOKEN_TYPES.WORD, false
+			end,
+		},
+		-- Other characters
+		{ "^(.)", TOKEN_TYPES.OTHER },
+	}
+
 	while pos <= #line do
 		local matched = false
 
-		-- Try patterns in priority order
-		-- Numbers (including scientific notation)
-		do
-			local match = line:sub(pos):match("^(%d+%.?%d*[eE][%+%-]?%d+)")
+		for _, pattern_info in ipairs(patterns) do
+			local match = line:sub(pos):match(pattern_info[1])
 			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.NUMBER,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-					is_variable = false,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		if not matched then
-			local match = line:sub(pos):match("^(%d+%.%d+)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.NUMBER,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-					is_variable = false,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		if not matched then
-			local match = line:sub(pos):match("^(%d+)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.NUMBER,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-					is_variable = false,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		-- Multi-char operators (must come before single-char)
-		if not matched then
-			local match = line:sub(pos):match("^(==)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OPERATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		if not matched then
-			local match = line:sub(pos):match("^(~=)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OPERATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		if not matched then
-			local match = line:sub(pos):match("^(>=)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OPERATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		if not matched then
-			local match = line:sub(pos):match("^(<=)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OPERATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		-- Single-char operators
-		if not matched then
-			local match = line:sub(pos):match("^([%+%-%*/%%%^])")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OPERATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		if not matched then
-			local match = line:sub(pos):match("^([<>])")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OPERATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		-- Parentheses and brackets
-		if not matched then
-			local match = line:sub(pos):match("^([%(%)%[%]])")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.PAREN,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		-- Separator (comma)
-		if not matched then
-			local match = line:sub(pos):match("^(,)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.SEPARATOR,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		-- Words (identifiers)
-		if not matched then
-			local match = line:sub(pos):match("^([%a_][%w_]*)")
-			if match then
-				local token_type = TOKEN_TYPES.WORD
+				local token_type = pattern_info[2]
 				local is_var = false
 
-				if is_math_function(match) then
-					token_type = TOKEN_TYPES.FUNCTION
-				elseif known_variables and known_variables[match] then
-					is_var = true
+				-- Call optional handler for special cases
+				if pattern_info[3] then
+					token_type, is_var = pattern_info[3](match)
 				end
 
-				table.insert(tokens, {
-					type = token_type,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-					is_variable = is_var,
-				})
+				local token = make_token(token_type, match, pos)
+				token.is_variable = is_var
+				table.insert(tokens, token)
+
 				pos = pos + #match
 				matched = true
+				break
 			end
 		end
 
-		-- Whitespace
 		if not matched then
-			local match = line:sub(pos):match("^(%s+)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.WHITESPACE,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
-		end
-
-		-- Other characters
-		if not matched then
-			local match = line:sub(pos):match("^(.)")
-			if match then
-				table.insert(tokens, {
-					type = TOKEN_TYPES.OTHER,
-					value = match,
-					start_col = pos,
-					end_col = pos + #match - 1,
-				})
-				pos = pos + #match
-				matched = true
-			end
+			pos = pos + 1 -- Safety net (shouldn't happen)
 		end
 	end
 
 	return tokens
 end
 
--- Calculate confidence score for a list of expression tokens
-local function calculate_confidence(expr_tokens, known_variables)
+-- Calculate confidence score for expression tokens
+local function calculate_confidence(expr_tokens)
 	local score = 0
 	local has_operator = false
 	local has_function = false
@@ -321,12 +170,12 @@ local function calculate_confidence(expr_tokens, known_variables)
 		end
 	end
 
-	-- Require at least operator or function for good confidence
+	-- Require operator or function for good confidence
 	if not (has_operator or has_function) then
 		score = score - 5
 	end
 
-	-- Penalize multiple unknown words (prose)
+	-- Penalize multiple prose words
 	if prose_word_count > 1 then
 		score = score - prose_word_count * 3
 	end
@@ -334,62 +183,48 @@ local function calculate_confidence(expr_tokens, known_variables)
 	return score
 end
 
--- Scan forward from a starting token to find expression boundaries
-local function scan_forward_for_expression(tokens, start_idx, known_variables, line)
+local function scan_forward_for_expression(tokens, start_idx, line)
 	local expr_tokens = {}
 	local paren_depth = 0
 	local idx = start_idx
-	local max_scan = 100  -- Prevent scanning too far
+	local max_scan = 100
 	local prev_token = nil
 
 	while idx <= #tokens and idx - start_idx < max_scan do
 		local token = tokens[idx]
 
-		-- Track parenthesis depth
 		if token.type == TOKEN_TYPES.PAREN then
-			if token.value == "(" or token.value == "[" then
-				paren_depth = paren_depth + 1
-			else
-				paren_depth = paren_depth - 1
-				if paren_depth < 0 then
-					break  -- Unmatched closing paren
-				end
+			local is_open = (token.value == "(" or token.value == "[")
+			paren_depth = paren_depth + (is_open and 1 or -1)
+
+			if paren_depth < 0 then
+				break
 			end
 		end
 
-		-- Stop at definitional boundaries (outside parentheses)
 		if paren_depth == 0 then
-			-- Detect comment marker: two consecutive '-' operators
-			if token.type == TOKEN_TYPES.OPERATOR and token.value == "-" and prev_token and
-				prev_token.type == TOKEN_TYPES.OPERATOR and prev_token.value == "-" then
-				-- Remove the last '-' from expr_tokens since we're at a comment start
-				if #expr_tokens > 0 then
-					table.remove(expr_tokens)
-				end
+			if
+				token.type == TOKEN_TYPES.OPERATOR
+				and token.value == "-"
+				and prev_token
+				and prev_token.type == TOKEN_TYPES.OPERATOR
+				and prev_token.value == "-"
+			then
+				table.remove(expr_tokens)
 				break
 			end
 
-			if token.type == TOKEN_TYPES.OPERATOR then
-				-- Stop at assignment operator (single =)
-				if token.value == "=" then
-					if #expr_tokens > 0 then
-						break  -- Don't include assignment operator
-					end
-				end
-			elseif token.type == TOKEN_TYPES.OTHER then
-				-- Stop at certain punctuation marks
+			if token.type == TOKEN_TYPES.OTHER then
 				if token.value:match("[%$:#\"'%[%]]") then
 					break
 				end
 			elseif token.type == TOKEN_TYPES.WORD and not token.is_variable and not is_math_function(token.value) then
-				-- Stop at unknown words (prose) outside parentheses
 				if #expr_tokens > 0 then
-					break  -- Don't include this word
+					break
 				end
 			end
 		end
 
-		-- Collect non-whitespace tokens
 		if token.type ~= TOKEN_TYPES.WHITESPACE then
 			table.insert(expr_tokens, token)
 		end
@@ -398,42 +233,30 @@ local function scan_forward_for_expression(tokens, start_idx, known_variables, l
 		idx = idx + 1
 	end
 
-	-- Build expression string from original line
 	if #expr_tokens == 0 then
 		return nil
 	end
 
 	local start_col = expr_tokens[1].start_col
 	local end_col = expr_tokens[#expr_tokens].end_col
-	local expr_str = line:sub(start_col, end_col)
 
 	return {
 		tokens = expr_tokens,
-		text = expr_str,
+		text = line:sub(start_col, end_col),
 		start_col = start_col,
 		end_col = end_col,
-		confidence = calculate_confidence(expr_tokens, known_variables),
+		confidence = calculate_confidence(expr_tokens),
 	}
 end
 
--- Find all potential expressions in a token list
-local function find_expression_boundaries(tokens, known_variables, line)
+local function find_expression_boundaries(tokens, line)
 	local expressions = {}
-	local covered_ranges = {}  -- Track which columns are already part of an expression
-
-	-- Helper: check if token at index i is immediately followed by '=' (with possible whitespace)
-	local function is_before_assignment(idx)
-		local next_idx = idx + 1
-		while next_idx <= #tokens and tokens[next_idx].type == TOKEN_TYPES.WHITESPACE do
-			next_idx = next_idx + 1
-		end
-		return next_idx <= #tokens and tokens[next_idx].type == TOKEN_TYPES.OPERATOR and tokens[next_idx].value == "="
-	end
+	local covered_ranges = {}
 
 	for i = 1, #tokens do
 		local token = tokens[i]
 
-		-- Only start scanning from tokens that are not already covered by an expression
+		-- Check if this token is already part of an existing expression
 		local is_covered = false
 		for _, range in ipairs(covered_ranges) do
 			if token.start_col >= range.start_col and token.start_col <= range.end_col then
@@ -442,35 +265,50 @@ local function find_expression_boundaries(tokens, known_variables, line)
 			end
 		end
 
-		-- Skip starting scans from WORD tokens immediately before '=' (variable assignments)
-		-- This prevents treating 'y' in 'y = x * pi' as the start of an expression
-		if token.type == TOKEN_TYPES.WORD and is_before_assignment(i) then
-			-- Skip this word - it's a variable assignment target
-		elseif not is_covered and (token.type == TOKEN_TYPES.NUMBER or token.type == TOKEN_TYPES.FUNCTION or token.is_variable) then
-			-- Start scanning from math-related tokens that aren't part of existing expressions
-			local expr = scan_forward_for_expression(tokens, i, known_variables, line)
-			if expr then
-				-- Check if this overlaps significantly with existing expressions
-				local is_duplicate = false
-				for _, existing in ipairs(expressions) do
-					if existing.start_col == expr.start_col and existing.end_col == expr.end_col then
-						is_duplicate = true
-						break
-					end
-				end
+		if is_covered then
+			goto continue
+		end
 
-				if not is_duplicate then
-					table.insert(expressions, expr)
-					table.insert(covered_ranges, {start_col = expr.start_col, end_col = expr.end_col})
-				end
+		if token.is_variable then
+			local next_idx = i + 1
+			while next_idx <= #tokens and tokens[next_idx].type == TOKEN_TYPES.WHITESPACE do
+				next_idx = next_idx + 1
+			end
+			if
+				next_idx <= #tokens
+				and tokens[next_idx].type == TOKEN_TYPES.OPERATOR
+				and tokens[next_idx].value == "="
+			then
+				goto continue
 			end
 		end
+
+		if not (token.type == TOKEN_TYPES.NUMBER or token.type == TOKEN_TYPES.FUNCTION or token.is_variable) then
+			goto continue
+		end
+
+		local expr = scan_forward_for_expression(tokens, i, line)
+		if expr then
+			local is_duplicate = false
+			for _, existing in ipairs(expressions) do
+				if existing.start_col == expr.start_col and existing.end_col == expr.end_col then
+					is_duplicate = true
+					break
+				end
+			end
+
+			if not is_duplicate then
+				table.insert(expressions, expr)
+				table.insert(covered_ranges, { start_col = expr.start_col, end_col = expr.end_col })
+			end
+		end
+
+		::continue::
 	end
 
 	return expressions
 end
 
--- Select the expression closest to cursor position
 local function select_closest_expression(expressions, cursor_col)
 	if #expressions == 0 then
 		return nil
@@ -483,19 +321,22 @@ local function select_closest_expression(expressions, cursor_col)
 		local distance
 
 		if cursor_col >= expr.start_col and cursor_col <= expr.end_col then
-			-- Cursor is inside expression - perfect match
-			distance = 0
+			distance = 0 -- Cursor is inside
 		else
-			-- Distance to nearest boundary
 			distance = math.min(math.abs(cursor_col - expr.start_col), math.abs(cursor_col - expr.end_col))
 		end
 
-		-- Prefer closer match, or higher confidence as tie-breaker
-		if distance < min_distance or (distance == min_distance and (not best or expr.confidence > best.confidence)) then
+		-- Prefer closer, then higher confidence, then leftmost
+		if
+			distance < min_distance
+			or (distance == min_distance and expr.confidence > (best and best.confidence or 0))
+			or (
+				distance == min_distance
+				and expr.confidence == (best and best.confidence or 0)
+				and expr.start_col < (best and best.start_col or math.huge)
+			)
+		then
 			min_distance = distance
-			best = expr
-		elseif distance == min_distance and expr.confidence == best.confidence and expr.start_col < best.start_col then
-			-- Second tie-breaker: prefer leftmost
 			best = expr
 		end
 	end
@@ -503,9 +344,8 @@ local function select_closest_expression(expressions, cursor_col)
 	return best
 end
 
--- Validate that extracted text looks like an expression
-local function validate_expression(expr_text, known_variables)
-	-- Check for empty
+-- Validate extracted expression text
+local function validate_expression(expr_text)
 	if expr_text:match("^%s*$") then
 		return false
 	end
@@ -513,65 +353,33 @@ local function validate_expression(expr_text, known_variables)
 	-- Check balanced parentheses
 	local open = 0
 	for c in expr_text:gmatch("[%(%)]") do
-		if c == "(" then
-			open = open + 1
-		else
-			open = open - 1
-			if open < 0 then
-				return false
-			end
+		open = open + (c == "(" and 1 or -1)
+		if open < 0 then
+			return false
 		end
 	end
-	if open ~= 0 then
-		return false
-	end
 
-	-- Basic validation: must contain at least a number, variable, or function
-	-- (not just operators or punctuation)
-	if not expr_text:match("%d") and  -- Contains a number
-		not expr_text:match("[%a_][%w_]*%s*%(") and  -- Contains a function call
-		not expr_text:match("[%a_][%w_]*") then  -- Contains a variable/word
-		return false
-	end
-
-	return true
+	return open == 0
 end
 
--- Main public API
 function M.extract_expression_at_cursor(line, cursor_col, buffer_lines)
-	-- Validate inputs
-	if not line or line == "" then
+	if not line or line == "" or cursor_col < 1 or cursor_col > #line then
 		return nil
 	end
 
-	if cursor_col < 1 or cursor_col > #line then
-		return nil
-	end
-
-	-- Wrap in pcall for safety
 	local success, result = pcall(function()
 		local calculator = require("calcium.calculator")
 		local known_variables = calculator.extract_variables(buffer_lines)
-
-		-- Tokenize the line
 		local tokens = tokenize_line(line, known_variables)
-
-		-- Find expression boundaries
-		local expressions = find_expression_boundaries(tokens, known_variables, line)
+		local expressions = find_expression_boundaries(tokens, line)
 
 		if #expressions == 0 then
 			return nil
 		end
 
-		-- Select expression closest to cursor
 		local best = select_closest_expression(expressions, cursor_col)
 
-		if not best or best.confidence < 5 then
-			return nil
-		end
-
-		-- Validate expression can be evaluated
-		if not validate_expression(best.text, known_variables) then
+		if not best or best.confidence < 5 or not validate_expression(best.text) then
 			return nil
 		end
 
@@ -579,16 +387,10 @@ function M.extract_expression_at_cursor(line, cursor_col, buffer_lines)
 			text = best.text,
 			start_col = best.start_col,
 			end_col = best.end_col,
-			confidence = best.confidence,
 		}
 	end)
 
-	if not success then
-		-- Error occurred, fail gracefully
-		return nil
-	end
-
-	return result
+	return success and result or nil
 end
 
 return M
