@@ -144,45 +144,6 @@ local function tokenize_line(line, known_variables)
 	return tokens
 end
 
--- Calculate confidence score for expression tokens
-local function calculate_confidence(expr_tokens)
-	local score = 0
-	local has_operator = false
-	local has_function = false
-	local prose_word_count = 0
-
-	for _, token in ipairs(expr_tokens) do
-		if token.type == TOKEN_TYPES.OPERATOR then
-			score = score + 3
-			has_operator = true
-		elseif token.type == TOKEN_TYPES.FUNCTION then
-			score = score + 5
-			has_function = true
-		elseif token.type == TOKEN_TYPES.NUMBER then
-			score = score + 1
-		elseif token.type == TOKEN_TYPES.WORD then
-			if token.is_variable then
-				score = score + 2
-			else
-				prose_word_count = prose_word_count + 1
-				score = score - 2
-			end
-		end
-	end
-
-	-- Require operator or function for good confidence
-	if not (has_operator or has_function) then
-		score = score - 5
-	end
-
-	-- Penalize multiple prose words
-	if prose_word_count > 1 then
-		score = score - prose_word_count * 3
-	end
-
-	return score
-end
-
 local function scan_forward_for_expression(tokens, start_idx, line)
 	local expr_tokens = {}
 	local paren_depth = 0
@@ -251,7 +212,6 @@ local function scan_forward_for_expression(tokens, start_idx, line)
 		text = line:sub(start_col, end_col),
 		start_col = start_col,
 		end_col = end_col,
-		confidence = calculate_confidence(expr_tokens),
 	}
 end
 
@@ -332,15 +292,10 @@ local function select_closest_expression(expressions, cursor_col)
 			distance = math.min(math.abs(cursor_col - expr.start_col), math.abs(cursor_col - expr.end_col))
 		end
 
-		-- Prefer closer, then higher confidence, then leftmost
+		-- Prefer closer, then leftmost
 		if
 			distance < min_distance
-			or (distance == min_distance and expr.confidence > (best and best.confidence or 0))
-			or (
-				distance == min_distance
-				and expr.confidence == (best and best.confidence or 0)
-				and expr.start_col < (best and best.start_col or math.huge)
-			)
+			or (distance == min_distance and expr.start_col < (best and best.start_col or math.huge))
 		then
 			min_distance = distance
 			best = expr
@@ -385,7 +340,7 @@ function M.extract_expression_at_cursor(line, cursor_col, buffer_lines)
 
 		local best = select_closest_expression(expressions, cursor_col)
 
-		if not best or best.confidence < 5 or not validate_expression(best.text) then
+		if not best or not validate_expression(best.text) then
 			return nil
 		end
 
