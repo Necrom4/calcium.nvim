@@ -92,23 +92,25 @@ mfl.trunc = function(n)
 end
 
 function M.extract_variables(buffer_lines)
-    local variables = {}
+	local variables = {}
 
-    for _, line in ipairs(buffer_lines) do
-        local clean = line:gsub("%s*%-%-.*$", ""):gsub("%s*#.*$", "")
-        clean = utils.trim(clean)
+	for _, line in ipairs(buffer_lines) do
+		local clean = line:gsub("%s*%-%-.*$", ""):gsub("%s*#.*$", "")
+		clean = utils.trim(clean)
 
-        if clean ~= "" then
-            local var_name, var_expr = clean:match("^([%w_]+)%s*=%s*([^=].*)$")
+		if clean ~= "" then
+			local var_name, var_expr = clean:match("^([%w_]+)%s*=%s*([^=].*)$")
 
-            if var_name then
-                local success, value = M.evaluate_expression(var_expr, variables)
-                if success then variables[var_name] = value end
-            end
-        end
-    end
+			if var_name then
+				local success, value = M.evaluate_expression(var_expr, variables)
+				if success then
+					variables[var_name] = value
+				end
+			end
+		end
+	end
 
-    return variables
+	return variables
 end
 
 function M.evaluate_expression(expr, variables)
