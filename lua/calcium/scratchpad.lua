@@ -95,10 +95,6 @@ function M.create_scratchpad()
 	-- Keymaps
 	local map_opts = { buffer = state.buf, silent = true }
 	vim.keymap.set("n", "q", M.close_scratchpad, map_opts)
-	vim.keymap.set("n", "<C-l>", function()
-		vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, {})
-		vim.api.nvim_buf_clear_namespace(state.buf, state.ns, 0, -1)
-	end, map_opts)
 
 	-- Autocmds
 	vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
