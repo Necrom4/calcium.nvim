@@ -61,8 +61,8 @@ A powerful [`lua-lib-math`](https://www.lua.org/pil/18.html) in-buffer calculato
 " Calculate an expression in the cmdline
 :Calcium 2 + pi * random()
 
-" Open floating scratchpad for live calculations
-:Calcium scratchpad
+" Open scratchpad buffer to calculate mathematical expressions with live preview
+:Calcium []scratchpad
 
 ```
 
@@ -70,8 +70,8 @@ A powerful [`lua-lib-math`](https://www.lua.org/pil/18.html) in-buffer calculato
 -- Calculate the expression in the visual selection and append result
 require("calcium").calculate({ mode = "append", visual = true })
 
--- Open floating scratchpad for live calculations
-require("calcium").floating_scratchpad()
+-- Open scratchpad buffer to calculate mathematical expressions with live preview
+require("calcium").scratchpad()
 ```
 
 **Examples**:

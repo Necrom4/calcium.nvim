@@ -41,9 +41,9 @@ local function setup_window()
 		height = height,
 		row = math.floor((ui.height - height) / 2),
 		col = math.floor((ui.width - width) / 2),
-		border = config.options.scratchpad.border or "single",
+		border = config.options.scratchpad.border or "rounded",
 		style = "minimal",
-		title = " Calcium Scratchpad ",
+		title = " Calcium ",
 		title_pos = "center",
 	})
 
@@ -56,7 +56,7 @@ end
 -- Helper to render virtual text results
 local function render_result(line_idx, text, col)
 	vim.api.nvim_buf_set_extmark(state.buf, state.ns, line_idx, col, {
-		virt_text = { { "  = " .. text, "Comment" } },
+		virt_text = { { " = " .. text, "Comment" } },
 		virt_text_pos = "inline",
 		hl_mode = "combine",
 	})
@@ -84,7 +84,7 @@ function M.evaluate_scratchpad()
 	end
 end
 
-function M.create_floating_calculator()
+function M.create_scratchpad()
 	if is_valid(state.win) then
 		M.close_scratchpad()
 		return

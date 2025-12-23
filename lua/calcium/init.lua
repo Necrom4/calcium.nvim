@@ -138,8 +138,8 @@ function M.calculate_cmdline(expr)
 	utils.notify("Result: " .. result, vim.log.levels.INFO, true)
 end
 
-function M.floating_scratchpad()
-	scratchpad.create_floating_calculator()
+function M.scratchpad()
+	scratchpad.create_scratchpad()
 end
 
 return M
