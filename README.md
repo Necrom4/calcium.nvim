@@ -61,11 +61,17 @@ A powerful [`lua-lib-math`](https://www.lua.org/pil/18.html) in-buffer calculato
 " Calculate an expression in the cmdline
 :Calcium 2 + pi * random()
 
+" Open floating scratchpad for live calculations
+:Calcium scratchpad
+
 ```
 
 ```lua
 -- Calculate the expression in the visual selection and append result
 require("calcium").calculate({ mode = "append", visual = true })
+
+-- Open floating scratchpad for live calculations
+require("calcium").floating_scratchpad()
 ```
 
 **Examples**:
@@ -101,4 +107,4 @@ y = x * pi -- = 12.5663706144
 - [x] Cmdline calculations
 - [x] Boolean result (`2 + 2 >= 3` `= true`)
 - [x] Smart selection when no visual selection is provided. In "I have `2 + 1` cats", the cursor must find the closest expression and solve it.
-- [ ] Playground mode, a small window in which the results are displayed live while typing
+- [x] Floating scratchpad mode with live calculations and ghost text results

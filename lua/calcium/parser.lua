@@ -87,6 +87,7 @@ local function tokenize_line(line, known_variables)
 		{ "^(~=)", TOKEN_TYPES.OPERATOR },
 		{ "^(>=)", TOKEN_TYPES.OPERATOR },
 		{ "^(<=)", TOKEN_TYPES.OPERATOR },
+		{ "^(=)",  TOKEN_TYPES.OPERATOR },
 		-- Single-char operators
 		{ "^([%+%-%*/%%%^<>])", TOKEN_TYPES.OPERATOR },
 		-- Parentheses

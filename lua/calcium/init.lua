@@ -2,6 +2,7 @@ local M = {}
 local calculator = require("calcium.calculator")
 local config = require("calcium.config")
 local utils = require("calcium.utils")
+local scratchpad = require("calcium.scratchpad")
 
 function M.setup(opts)
 	config.setup(opts)
@@ -135,6 +136,10 @@ function M.calculate_cmdline(expr)
 	end
 
 	utils.notify("Result: " .. result, vim.log.levels.INFO, true)
+end
+
+function M.floating_scratchpad()
+	scratchpad.create_floating_calculator()
 end
 
 return M

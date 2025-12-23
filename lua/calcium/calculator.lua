@@ -119,6 +119,15 @@ function M.evaluate_expression(expr, variables)
 		return string.format("(%s * 10^%s)", num, exp)
 	end)
 
+    -- Normalize "assignment-style" equals (=) into "comparison-style" (==)
+    -- This allows users to type "x = 5" and have it evaluated as a boolean check.
+    -- 1. Replace '=' with '==' only if it isn't part of an existing operator (==, >=, <=, !=, ~=)
+    expr = expr:gsub("([^=<>!~])=([^=])", "%1==%2")
+    -- 2. Handle '=' at the very beginning of the string
+    expr = expr:gsub("^=([^=])", "==%1")
+    -- 3. Handle '=' at the very end of the string
+    expr = expr:gsub("([^=])=$", "%1==")
+
 	-- Replace variables with their values
 	if variables then
 		for var_name, var_value in pairs(variables) do
