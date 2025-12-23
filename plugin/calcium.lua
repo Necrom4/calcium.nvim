@@ -14,6 +14,9 @@ vim.api.nvim_create_user_command("Calcium", function(opts)
 			mode = "append"
 		elseif args[1] == "replace" or args[1] == "r" then
 			mode = "replace"
+		elseif args[1] == "scratchpad" or not args[1] then
+			require("calcium").scratchpad()
+			return
 		else
 			require("calcium").calculate_cmdline(opts.args)
 			return
@@ -33,7 +36,7 @@ end, {
 			return {}
 		end
 
-		return { "append", "replace" }
+		return { "append", "replace", "scratchpad" }
 	end,
 	desc = "Calculate",
 })

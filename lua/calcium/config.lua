@@ -3,6 +3,9 @@ local M = {}
 M.defaults = {
 	notifications = true,
 	default_mode = "append",
+	scratchpad = {
+		border = "rounded",
+	},
 }
 
 M.options = {}

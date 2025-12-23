@@ -94,18 +94,18 @@ end
 function M.extract_variables(buffer_lines)
 	local variables = {}
 
-	local pattern = "^%s*([%w_]+)%s*=%s*(.+)$"
-
 	for _, line in ipairs(buffer_lines) do
-		local var_name, var_expr = line:match(pattern)
-		if var_name and var_expr then
-			-- Remove trailing comments
-			var_expr = var_expr:gsub("%s*%-%-.*$", ""):gsub("%s*#.*$", "")
-			var_expr = utils.trim(var_expr)
+		local clean = line:gsub("%s*%-%-.*$", ""):gsub("%s*#.*$", "")
+		clean = utils.trim(clean)
 
-			local success, value = M.evaluate_expression(var_expr, variables)
-			if success then
-				variables[var_name] = value
+		if clean ~= "" then
+			local var_name, var_expr = clean:match("^([%w_]+)%s*=%s*([^=].*)$")
+
+			if var_name then
+				local success, value = M.evaluate_expression(var_expr, variables)
+				if success then
+					variables[var_name] = value
+				end
 			end
 		end
 	end
