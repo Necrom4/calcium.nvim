@@ -16,6 +16,14 @@ syntax region calciumResult
 syntax match calciumResultNumber /\v\d+(\.\d+)?>/ contained
 highlight default link calciumResultNumber Special
 
+" Brackets
+syntax match calciumBracket /[()\[\]{}]/
+if hlexists('@punctuation.bracket')
+  highlight default link calciumBracket @punctuation.bracket
+else
+  highlight default link calciumBracket Delimiter
+endif
+
 " Function call region: name(...)
 syntax region calciumFunctionCall
   \ start=/\v<[a-zA-Z_]\w*\(/
@@ -27,8 +35,5 @@ syntax region calciumFunctionCall
 syntax match calciumFunctionName /\v<[a-zA-Z_]\w*/ contained
 highlight default link calciumFunctionName Function
 
-" Function parentheses
-syntax match calciumFuncParen /[()]/ contained
-highlight default link calciumFuncParen Delimiter
 
 let b:current_syntax = "calcium"
