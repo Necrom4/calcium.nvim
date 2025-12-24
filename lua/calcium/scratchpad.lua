@@ -72,13 +72,16 @@ function M.evaluate_scratchpad()
 
 	vim.api.nvim_buf_clear_namespace(state.buf, state.ns, 0, -1)
 
+	local previous_evaluation = nil
 	local variables = calculator.extract_variables(lines)
 
 	for i, line in ipairs(lines) do
 		if line ~= "" then
+			variables["_"] = previous_evaluation
 			local success, result = calculator.evaluate_expression(line, variables)
 			if success then
 				render_result(i - 1, calculator.format_result(result), #line)
+				previous_evaluation = result
 			end
 		end
 	end
