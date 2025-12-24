@@ -56,8 +56,8 @@ end
 -- Helper to render virtual text results
 local function render_result(line_idx, text, col)
 	vim.api.nvim_buf_set_extmark(state.buf, state.ns, line_idx, col, {
-		virt_text = { { " = " .. text, "Comment" } },
-		virt_text_pos = "inline",
+		virt_text = { { "= " .. text, "Comment" } },
+		virt_text_pos = "eol",
 		hl_mode = "combine",
 	})
 end
