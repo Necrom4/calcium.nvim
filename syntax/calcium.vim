@@ -16,10 +16,19 @@ syntax region calciumResult
 syntax match calciumResultNumber /\v\d+(\.\d+)?>/ contained
 highlight default link calciumResultNumber Special
 
-" Functions
-syntax match calciumFunctionCall /\v<[a-zA-Z_]\w*\(/ contains=calciumFunctionName
-" Highlight only the name part
+" Function call region: name(...)
+syntax region calciumFunctionCall
+  \ start=/\v<[a-zA-Z_]\w*\(/
+  \ end=/)/
+  \ contains=calciumFunctionName,calciumFuncParen,calciumNumber
+  \ keepend
+
+" Function name
 syntax match calciumFunctionName /\v<[a-zA-Z_]\w*/ contained
 highlight default link calciumFunctionName Function
+
+" Function parentheses
+syntax match calciumFuncParen /[()]/ contained
+highlight default link calciumFuncParen Delimiter
 
 let b:current_syntax = "calcium"
