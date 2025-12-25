@@ -16,13 +16,16 @@ endif
 
 " Result
 syntax region calciumResult
-  \ start=/=/
-  \ end=/$/
-  \ contains=calciumResultNumber
-  \ keepend
+      \ start=/\v[^=~><][=]\s*\zs[a-zA-Z0-9]/
+      \ end=/$/
+      \ contains=calciumResultNumber,calciumResultBoolean
+      \ keepend
 
 syntax match calciumResultNumber /\v\d+(\.\d+)?>/ contained
 highlight default link calciumResultNumber Special
+
+syntax match calciumResultBoolean /\v<(true|false)>/ contained
+highlight default link calciumResultBoolean Special
 
 " Brackets
 syntax match calciumBracket /[()\[\]{}]/
