@@ -37,14 +37,18 @@ endif
 
 " Function call region: name(...)
 syntax region calciumFunctionCall
-  \ start=/\v<[a-zA-Z_]\w*\(/
-  \ end=/)/
-  \ contains=calciumFunctionName,calciumFuncParen,calciumNumber
-  \ keepend
+      \ start=/\v<[a-zA-Z_]\w*\(/
+      \ end=/)/
+      \ contains=calciumFunctionName,calciumNumber,calciumBracket,calciumVariable
+      \ keepend
 
 " Function name
 syntax match calciumFunctionName /\v<[a-zA-Z_]\w*/ contained
-highlight default link calciumFunctionName Function
+if hlexists('@keyword.function')
+  highlight default link calciumFunctionName @keyword.function
+else
+  highlight default link calciumFunctionName Function
+endif
 
 
 let b:current_syntax = "calcium"
