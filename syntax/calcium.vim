@@ -35,15 +35,8 @@ else
   highlight default link calciumBracket Delimiter
 endif
 
-" Function call region: name(...)
-syntax region calciumFunctionCall
-      \ start=/\v<[a-zA-Z_]\w*\(/
-      \ end=/)/
-      \ contains=calciumFunctionName,calciumNumber,calciumBracket,calciumVariable
-      \ keepend
-
 " Function name
-syntax match calciumFunctionName /\v<[a-zA-Z_]\w*/ contained
+syntax match calciumFunctionName /\v<[A-Za-z_][A-Za-z0-9_]*\ze\(/
 if hlexists('@keyword.function')
   highlight default link calciumFunctionName @keyword.function
 else
