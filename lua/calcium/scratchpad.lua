@@ -96,6 +96,10 @@ function M.create_scratchpad()
 
 	state.buf, state.win = setup_window()
 
+	-- Keymaps
+	local map_opts = { buffer = state.buf, silent = true }
+	vim.keymap.set("n", "q", M.close_scratchpad, map_opts)
+
 	-- Autocmds
 	vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
 		group = vim.api.nvim_create_augroup("CalciumFloating", { clear = true }),
