@@ -92,6 +92,19 @@ x = 2 + 2 -- = 4
 y = x * pi -- = 12.5663706144
 ```
 
+## 📝 Scratchpad
+
+Floating buffer for live calculations with virtual text results. Use `:Calcium scratchpad` or `require("calcium").scratchpad()` to open, `q` to close.
+
+The `ans` variable stores the last calculation result for use in subsequent expressions.
+
+**Example:**
+```
+16 + 4         -- = 20
+ans / 4        -- = 5
+sqrt(ans)      -- = 2.2360679775
+```
+
 #### 𝑓 Available functions
 
 - **Trigonometry**: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`
