@@ -77,7 +77,8 @@ A powerful [`lua-lib-math`](https://www.lua.org/pil/18.html) in-buffer calculato
 -- Calculate the expression in the visual selection and append result
 require("calcium").calculate({ mode = "append", visual = true })
 
--- Open scratchpad buffer to calculate mathematical expressions with live preview
+-- !NOTE: remove `(`q` to close)` once keymap configuration is added to README.
+-- Open (`q` to close) scratchpad buffer to evaluate expressions with live result preview
 require("calcium").scratchpad()
 ```
 
@@ -89,20 +90,6 @@ x = 2 + 2 -- = 4
 
 -- Select [x * pi] and run `:Calcium`
 y = x * pi -- = 12.5663706144
-```
-
-## 📝 Scratchpad
-
-Floating buffer for live calculations with virtual text results. Use `:Calcium scratchpad` or `require("calcium").scratchpad()` to open, `q` to close.
-
-The `ans` variable stores the last calculation result for use in subsequent expressions.
-
-**Example:**
-
-```
-16 + 4         -- = 20
-ans / 4        -- = 5
-sqrt(ans)      -- = 2.2360679775
 ```
 
 #### 𝑓 Available functions
@@ -119,6 +106,7 @@ sqrt(ans)      -- = 2.2360679775
 - **Random**: `random`, `randomseed`
 - **Constants**: `pi`, `huge`
 - **Boolean**: `==`, `~=`, `>`, `<`, `>=`, `<=`
+- **Scratchpad-specific**: `ans` (result of the previous line)
 
 ## 🏆 Roadmap
 
