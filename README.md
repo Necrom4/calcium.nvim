@@ -30,8 +30,16 @@ A powerful [`lua-lib-math`](https://www.lua.org/pil/18.html) in-buffer calculato
   cmd = { "Calcium" },
   opts = {
     -- default configuration
-    notifications = true, -- notify result
-    default_mode = "append", -- or `replace` the expression
+    notifications = true,                 -- notify result
+    default_mode = "append",              -- or `replace` the expression
+    scratchpad = {
+        border = "rounded",               -- floating window border style, :help 'winborder' 
+        virtual_text = {
+            format = "= %s",              -- virtual text format
+            highlight_group = "Comment",  -- virtual text highlight group
+        },
+        result_variable = "ans"           -- name of the variable for the last computation result
+    },
   },
   keys = {
     -- example keymap
@@ -82,6 +90,19 @@ x = 2 + 2 -- = 4
 
 -- Select [x * pi] and run `:Calcium`
 y = x * pi -- = 12.5663706144
+```
+
+## 📝 Scratchpad
+
+Floating buffer for live calculations with virtual text results. Use `:Calcium scratchpad` or `require("calcium").scratchpad()` to open, `q` to close.
+
+The `ans` variable stores the last calculation result for use in subsequent expressions.
+
+**Example:**
+```
+16 + 4         -- = 20
+ans / 4        -- = 5
+sqrt(ans)      -- = 2.2360679775
 ```
 
 #### 𝑓 Available functions

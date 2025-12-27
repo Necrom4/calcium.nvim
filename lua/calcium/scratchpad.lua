@@ -6,7 +6,7 @@ local config = require("calcium.config")
 local state = {
 	buf = nil,
 	win = nil,
-	ns = vim.api.nvim_create_namespace("CalciumGhost"),
+	ns = vim.api.nvim_create_namespace("CalciumVirtualText"),
 }
 
 local function is_valid(win)
@@ -41,7 +41,7 @@ local function setup_window()
 		height = height,
 		row = math.floor((ui.height - height) / 2),
 		col = math.floor((ui.width - width) / 2),
-		border = config.options.scratchpad.border or "rounded",
+		border = config.options.scratchpad.border,
 		style = "minimal",
 		title = " Calcium ",
 		title_pos = "center",
@@ -55,8 +55,9 @@ end
 
 -- Helper to render virtual text results
 local function render_result(line_idx, text, col)
+	local vt_config = config.options.scratchpad.virtual_text
 	vim.api.nvim_buf_set_extmark(state.buf, state.ns, line_idx, col, {
-		virt_text = { { "= " .. text, "Comment" } },
+		virt_text = { { string.format(vt_config.format, text), vt_config.highlight_group } },
 		virt_text_pos = "eol",
 		hl_mode = "combine",
 	})
@@ -72,13 +73,16 @@ function M.evaluate_scratchpad()
 
 	vim.api.nvim_buf_clear_namespace(state.buf, state.ns, 0, -1)
 
+	local last_result = nil
 	local variables = calculator.extract_variables(lines)
 
 	for i, line in ipairs(lines) do
 		if line ~= "" then
+			variables[config.options.scratchpad.result_variable] = last_result
 			local success, result = calculator.evaluate_expression(line, variables)
 			if success then
 				render_result(i - 1, calculator.format_result(result), #line)
+				last_result = result
 			end
 		end
 	end

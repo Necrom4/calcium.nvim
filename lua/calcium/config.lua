@@ -5,6 +5,11 @@ M.defaults = {
 	default_mode = "append",
 	scratchpad = {
 		border = "rounded",
+		virtual_text = {
+			format = "= %s",
+			highlight_group = "Comment",
+		},
+		result_variable = "ans",
 	},
 }
 
