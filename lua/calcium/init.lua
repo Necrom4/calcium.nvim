@@ -94,7 +94,7 @@ local function extract_normal_mode(buffer_lines)
 end
 
 function M.calculate(mode, visual)
-	mode = mode or "append"
+	mode = config.options.default_mode or "append"
 	visual = visual or false
 
 	local bufnr = vim.api.nvim_get_current_buf()
